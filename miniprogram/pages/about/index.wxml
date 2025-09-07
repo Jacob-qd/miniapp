@@ -1,0 +1,148 @@
+<!--about/index.wxml-->
+<view class="container">
+  <!-- 企业头部 -->
+  <view class="company-header">
+    <view class="company-banner">
+      <image src="/images/company-banner.jpg" mode="aspectFill"></image>
+      <view class="banner-overlay">
+        <view class="company-logo">
+          <image src="/images/company-logo.png" mode="aspectFit"></image>
+        </view>
+        <view class="company-name">{{companyInfo.name}}</view>
+        <view class="company-slogan">{{companyInfo.slogan}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 企业简介 -->
+  <view class="company-intro">
+    <view class="section-title">
+      <text>企业简介</text>
+    </view>
+    <view class="intro-content">
+      <text>{{companyInfo.introduction}}</text>
+    </view>
+  </view>
+
+  <!-- 核心优势 -->
+  <view class="advantages-section">
+    <view class="section-title">
+      <text>核心优势</text>
+    </view>
+    <view class="advantages-grid">
+      <view class="advantage-item" wx:for="{{advantages}}" wx:key="id">
+        <view class="advantage-icon">
+          <image src="{{item.icon}}" mode="aspectFit"></image>
+        </view>
+        <view class="advantage-title">{{item.title}}</view>
+        <view class="advantage-desc">{{item.description}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 发展历程 -->
+  <view class="timeline-section">
+    <view class="section-title">
+      <text>发展历程</text>
+    </view>
+    <view class="timeline">
+      <view class="timeline-item" wx:for="{{timeline}}" wx:key="year">
+        <view class="timeline-dot"></view>
+        <view class="timeline-content">
+          <view class="timeline-year">{{item.year}}</view>
+          <view class="timeline-title">{{item.title}}</view>
+          <view class="timeline-desc">{{item.description}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 团队介绍 -->
+  <view class="team-section">
+    <view class="section-title">
+      <text>核心团队</text>
+    </view>
+    <view class="team-grid">
+      <view class="team-member" wx:for="{{teamMembers}}" wx:key="id">
+        <view class="member-avatar">
+          <image src="{{item.avatar}}" mode="aspectFill"></image>
+        </view>
+        <view class="member-info">
+          <view class="member-name">{{item.name}}</view>
+          <view class="member-position">{{item.position}}</view>
+          <view class="member-desc">{{item.description}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 企业文化 -->
+  <view class="culture-section">
+    <view class="section-title">
+      <text>企业文化</text>
+    </view>
+    <view class="culture-grid">
+      <view class="culture-item" wx:for="{{culture}}" wx:key="type">
+        <view class="culture-icon">
+          <image src="{{item.icon}}" mode="aspectFit"></image>
+        </view>
+        <view class="culture-type">{{item.type}}</view>
+        <view class="culture-content">{{item.content}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 资质荣誉 -->
+  <view class="honors-section">
+    <view class="section-title">
+      <text>资质荣誉</text>
+    </view>
+    <view class="honors-grid">
+      <view class="honor-item" wx:for="{{honors}}" wx:key="id" bindtap="previewHonor" data-index="{{index}}">
+        <image src="{{item.image}}" mode="aspectFit" class="honor-image"></image>
+        <view class="honor-title">{{item.title}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 联系我们 -->
+  <view class="contact-section">
+    <view class="section-title">
+      <text>联系我们</text>
+    </view>
+    <view class="contact-info">
+      <view class="contact-item" wx:for="{{contactInfo}}" wx:key="type">
+        <view class="contact-icon">
+          <icon type="{{item.icon}}" size="20"></icon>
+        </view>
+        <view class="contact-content">
+          <view class="contact-label">{{item.label}}</view>
+          <view class="contact-value" bindtap="onContactTap" data-type="{{item.type}}" data-value="{{item.value}}">
+            {{item.value}}
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 地图位置 -->
+    <view class="map-container">
+      <map 
+        id="companyMap" 
+        longitude="{{companyInfo.longitude}}" 
+        latitude="{{companyInfo.latitude}}"
+        scale="16"
+        markers="{{mapMarkers}}"
+        show-location="true"
+        bindmarkertap="onMarkerTap"
+        class="company-map">
+      </map>
+      <view class="map-address">
+        <text>{{companyInfo.address}}</text>
+        <button class="btn-navigation" size="mini" bindtap="onNavigationTap">
+          导航
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作

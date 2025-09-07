@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./api",
+    "rootDir": "./api",
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": [
+    "api/**/*.ts"
+  ],
+  "exclude": [
+    "api/**/*.js",
+    "node_modules",
+    "dist"
+  ]
+}

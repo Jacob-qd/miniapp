@@ -1,0 +1,442 @@
+/**about/index.wxss**/
+.container {
+  padding: 0;
+  background-color: #f5f5f5;
+}
+
+/* 企业头部 */
+.company-header {
+  position: relative;
+  margin-bottom: 30rpx;
+}
+
+.company-banner {
+  position: relative;
+  width: 100%;
+  height: 500rpx;
+}
+
+.company-banner image {
+  width: 100%;
+  height: 100%;
+}
+
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  text-align: center;
+}
+
+.company-logo {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 30rpx;
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+}
+
+.company-logo image {
+  width: 100%;
+  height: 100%;
+}
+
+.company-name {
+  font-size: 48rpx;
+  font-weight: bold;
+  margin-bottom: 16rpx;
+}
+
+.company-slogan {
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+/* 通用区块样式 */
+.company-intro,
+.advantages-section,
+.timeline-section,
+.team-section,
+.culture-section,
+.honors-section,
+.contact-section {
+  background-color: #ffffff;
+  margin-bottom: 30rpx;
+  padding: 40rpx 30rpx;
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 30rpx;
+  position: relative;
+  padding-left: 20rpx;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8rpx;
+  height: 32rpx;
+  background-color: #1890FF;
+  border-radius: 4rpx;
+}
+
+/* 企业简介 */
+.intro-content {
+  font-size: 28rpx;
+  color: #666666;
+  line-height: 1.8;
+  text-align: justify;
+}
+
+/* 核心优势 */
+.advantages-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30rpx;
+}
+
+.advantage-item {
+  text-align: center;
+  padding: 30rpx 20rpx;
+  background-color: #f8faff;
+  border-radius: 16rpx;
+  border: 2rpx solid #e6f4ff;
+}
+
+.advantage-icon {
+  width: 80rpx;
+  height: 80rpx;
+  margin: 0 auto 20rpx;
+}
+
+.advantage-icon image {
+  width: 100%;
+  height: 100%;
+}
+
+.advantage-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 12rpx;
+}
+
+.advantage-desc {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+/* 发展历程 */
+.timeline {
+  position: relative;
+  padding-left: 40rpx;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 20rpx;
+  top: 0;
+  bottom: 0;
+  width: 4rpx;
+  background-color: #e8e8e8;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 40rpx;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -28rpx;
+  top: 8rpx;
+  width: 16rpx;
+  height: 16rpx;
+  background-color: #1890FF;
+  border-radius: 50%;
+  border: 4rpx solid #ffffff;
+  box-shadow: 0 0 0 4rpx #e6f4ff;
+}
+
+.timeline-content {
+  background-color: #f8faff;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  border-left: 4rpx solid #1890FF;
+}
+
+.timeline-year {
+  font-size: 24rpx;
+  color: #1890FF;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.timeline-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.timeline-desc {
+  font-size: 26rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+/* 团队介绍 */
+.team-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 30rpx;
+}
+
+.team-member {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 24rpx;
+  background-color: #f8faff;
+  border-radius: 16rpx;
+  border: 2rpx solid #e6f4ff;
+}
+
+.member-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.member-avatar image {
+  width: 100%;
+  height: 100%;
+}
+
+.member-info {
+  flex: 1;
+}
+
+.member-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.member-position {
+  font-size: 26rpx;
+  color: #1890FF;
+  margin-bottom: 12rpx;
+}
+
+.member-desc {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+/* 企业文化 */
+.culture-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.culture-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  padding: 24rpx;
+  background-color: #f8faff;
+  border-radius: 12rpx;
+  border-left: 4rpx solid #1890FF;
+}
+
+.culture-icon {
+  width: 60rpx;
+  height: 60rpx;
+  flex-shrink: 0;
+}
+
+.culture-icon image {
+  width: 100%;
+  height: 100%;
+}
+
+.culture-type {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #1890FF;
+  margin-bottom: 8rpx;
+}
+
+.culture-content {
+  font-size: 26rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+/* 资质荣誉 */
+.honors-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20rpx;
+}
+
+.honor-item {
+  text-align: center;
+  padding: 20rpx;
+  background-color: #f8faff;
+  border-radius: 12rpx;
+  border: 2rpx solid #e6f4ff;
+}
+
+.honor-image {
+  width: 100%;
+  height: 120rpx;
+  margin-bottom: 12rpx;
+}
+
+.honor-title {
+  font-size: 22rpx;
+  color: #333333;
+  line-height: 1.4;
+}
+
+/* 联系我们 */
+.contact-info {
+  margin-bottom: 30rpx;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.contact-item:last-child {
+  border-bottom: none;
+}
+
+.contact-icon {
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e6f4ff;
+  border-radius: 50%;
+  color: #1890FF;
+}
+
+.contact-content {
+  flex: 1;
+}
+
+.contact-label {
+  font-size: 24rpx;
+  color: #999999;
+  margin-bottom: 4rpx;
+}
+
+.contact-value {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: bold;
+}
+
+/* 地图 */
+.map-container {
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.company-map {
+  width: 100%;
+  height: 400rpx;
+}
+
+.map-address {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  background-color: #ffffff;
+  border-top: 2rpx solid #f0f0f0;
+}
+
+.map-address text {
+  font-size: 26rpx;
+  color: #333333;
+  flex: 1;
+}
+
+.btn-navigation {
+  background-color: #1890FF;
+  color: #ffffff;
+  border-radius: 50rpx;
+  border: none;
+  padding: 12rpx 24rpx;
+  font-size: 24rpx;
+}
+
+/* 底部操作 */
+.bottom-actions {
+  display: flex;
+  gap: 20rpx;
+  padding: 30rpx;
+  background-color: #ffffff;
+  border-top: 2rpx solid #f0f0f0;
+}
+
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 24rpx;
+  border-radius: 50rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.btn-primary {
+  background-color: #1890FF;
+  color: #ffffff;
+  border: none;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #1890FF;
+  border: 2rpx solid #1890FF;
+}

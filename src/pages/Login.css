@@ -1,0 +1,196 @@
+.login-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.login-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 1;
+}
+
+.login-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.login-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.login-card {
+  position: relative;
+  z-index: 2;
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-card .ant-card-head {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.login-card .ant-card-head-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1890ff;
+  padding: 16px 0;
+}
+
+.login-card .ant-card-body {
+  padding: 32px;
+}
+
+.login-card .ant-form-item {
+  margin-bottom: 24px;
+}
+
+.login-card .ant-input-affix-wrapper,
+.login-card .ant-input {
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s;
+}
+
+.login-card .ant-input-affix-wrapper:hover,
+.login-card .ant-input:hover {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.login-card .ant-input-affix-wrapper:focus,
+.login-card .ant-input-affix-wrapper-focused,
+.login-card .ant-input:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.login-card .ant-btn-primary {
+  height: 48px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+  transition: all 0.3s;
+}
+
+.login-card .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.login-card .ant-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+}
+
+.login-tips {
+  margin-top: 24px;
+  padding: 16px;
+  background: rgba(24, 144, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(24, 144, 255, 0.1);
+  text-align: center;
+}
+
+.login-tips p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.login-tips p:first-child {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .login-card {
+    width: 350px;
+    margin: 20px;
+  }
+  
+  .login-card .ant-card-body {
+    padding: 24px;
+  }
+  
+  .login-card .ant-card-head-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    width: 300px;
+  }
+  
+  .login-card .ant-card-body {
+    padding: 20px;
+  }
+}
+
+/* 加载动画 */
+.login-card .ant-btn-loading {
+  pointer-events: none;
+}
+
+.login-card .ant-btn-loading .ant-btn-loading-icon {
+  margin-right: 8px;
+}
+
+/* 表单验证样式 */
+.login-card .ant-form-item-has-error .ant-input-affix-wrapper,
+.login-card .ant-form-item-has-error .ant-input {
+  border-color: #ff4d4f;
+}
+
+.login-card .ant-form-item-has-error .ant-input-affix-wrapper:hover,
+.login-card .ant-form-item-has-error .ant-input:hover {
+  border-color: #ff7875;
+}
+
+.login-card .ant-form-item-explain-error {
+  font-size: 12px;
+  margin-top: 4px;
+}

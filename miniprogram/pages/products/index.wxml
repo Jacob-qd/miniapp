@@ -1,0 +1,97 @@
+<!--products/index.wxml-->
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input">
+      <icon class="search-icon" type="search" size="16"></icon>
+      <input placeholder="搜索产品..." value="{{searchKeyword}}" bindinput="onSearchInput" confirm-type="search" bindconfirm="onSearch" />
+    </view>
+    <view class="filter-btn" bindtap="onFilterTap">
+      <text>筛选</text>
+      <icon type="{{showFilter ? 'clear' : 'info'}}" size="14"></icon>
+    </view>
+  </view>
+
+  <!-- 筛选面板 -->
+  <view class="filter-panel" wx:if="{{showFilter}}">
+    <view class="filter-section">
+      <text class="filter-title">产品分类</text>
+      <view class="filter-tags">
+        <view class="filter-tag {{selectedCategory === '' ? 'active' : ''}}" bindtap="onCategoryTap" data-category="">
+          全部
+        </view>
+        <view class="filter-tag {{selectedCategory === item.key ? 'active' : ''}}" wx:for="{{categories}}" wx:key="key" bindtap="onCategoryTap" data-category="{{item.key}}">
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+    <view class="filter-section">
+      <text class="filter-title">价格区间</text>
+      <view class="filter-tags">
+        <view class="filter-tag {{selectedPrice === '' ? 'active' : ''}}" bindtap="onPriceTap" data-price="">
+          不限
+        </view>
+        <view class="filter-tag {{selectedPrice === item.key ? 'active' : ''}}" wx:for="{{priceRanges}}" wx:key="key" bindtap="onPriceTap" data-price="{{item.key}}">
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 产品列表 -->
+  <view class="products-list">
+    <view class="product-item" wx:for="{{filteredProducts}}" wx:key="id" bindtap="onProductTap" data-id="{{item.id}}">
+      <view class="product-image">
+        <image src="{{item.image_url}}" mode="aspectFill" lazy-load></image>
+        <view class="product-badge" wx:if="{{item.is_hot}}">
+          <text>热门</text>
+        </view>
+      </view>
+      <view class="product-info">
+        <view class="product-name">{{item.name}}</view>
+        <view class="product-desc">{{item.description}}</view>
+        <view class="product-features">
+          <text class="feature-tag" wx:for="{{item.features}}" wx:for-item="feature" wx:key="*this">
+            {{feature}}
+          </text>
+        </view>
+        <view class="product-footer">
+          <view class="product-price">
+            <text class="price-label">起价</text>
+            <text class="price-value">¥{{item.price}}</text>
+            <text class="price-unit">/月</text>
+          </view>
+          <view class="product-action">
+            <button class="btn-consult" size="mini" bindtap="onConsultTap" data-id="{{item.id}}" catchtap="true">
+              咨询
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{filteredProducts.length === 0}}">
+    <image src="/images/empty-products.png" class="empty-image"></image>
+    <text class="empty-text">暂无相关产品</text>
+    <button class="btn-refresh" bindtap="onRefresh">刷新试试</button>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && filteredProducts.length > 0}}">
+    <view class="loading" wx:if="{{loading}}">
+      <icon type="waiting" size="20"></icon>
+      <text>加载中...</text>
+    </view>
+    <button class="btn-load-more" wx:else bindtap="onLoadMore">
+      加载更多
+    </button>
+  </view>
+
+  <!-- 联系咨询浮动按钮 -->
+  <view class="float-contact" bindtap="onContactTap">
+    <icon type="success" size="20"></icon>
+    <text>咨询</text>
+  </view>
+</view>

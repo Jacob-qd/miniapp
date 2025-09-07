@@ -1,0 +1,69 @@
+<!--solution/detail.wxml-->
+<view class="container">
+  <!-- 方案头部 -->
+  <view class="solution-header">
+    <image class="solution-banner" src="{{solution.banner_url || '/images/solution-banner.jpg'}}" mode="aspectFill"></image>
+    <view class="solution-info">
+      <view class="solution-title">{{solution.title}}</view>
+      <view class="solution-summary">{{solution.description}}</view>
+    </view>
+  </view>
+
+  <!-- 方案详情 -->
+  <view class="solution-content">
+    <view class="content-section">
+      <view class="section-title">方案详情</view>
+      <view class="content-text">{{solution.content}}</view>
+    </view>
+
+    <!-- 技术特点 -->
+    <view class="features-section" wx:if="{{solution.features && solution.features.length > 0}}">
+      <view class="section-title">技术特点</view>
+      <view class="features-list">
+        <block wx:for="{{solution.features}}" wx:key="index">
+          <view class="feature-item">
+            <view class="feature-icon">✓</view>
+            <view class="feature-text">{{item}}</view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 应用场景 -->
+    <view class="scenarios-section" wx:if="{{solution.scenarios && solution.scenarios.length > 0}}">
+      <view class="section-title">应用场景</view>
+      <view class="scenarios-grid">
+        <block wx:for="{{solution.scenarios}}" wx:key="index">
+          <view class="scenario-item">
+            <view class="scenario-title">{{item.title}}</view>
+            <view class="scenario-desc">{{item.description}}</view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <!-- 案例展示 -->
+  <view class="cases-section" wx:if="{{solution.case_images && solution.case_images.length > 0}}">
+    <view class="section-title">成功案例</view>
+    <view class="cases-grid">
+      <block wx:for="{{solution.case_images}}" wx:key="index">
+        <view class="case-item" bindtap="previewImage" data-current="{{item}}" data-urls="{{solution.case_images}}">
+          <image class="case-image" src="{{item}}" mode="aspectFill"></image>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 联系咨询 -->
+  <view class="contact-section">
+    <view class="contact-card">
+      <view class="contact-title">对此方案感兴趣？</view>
+      <view class="contact-desc">联系我们的专业顾问，获取详细方案和报价</view>
+      <view class="contact-actions">
+        <button class="btn-secondary" bindtap="onCallTap">电话咨询</button>
+        <button class="btn-primary" bindtap="onWechatTap">微信咨询</button>
+      </view>
+    </view>
+  </view>
+</view>

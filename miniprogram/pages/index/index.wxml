@@ -1,0 +1,81 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 轮播图模块 -->
+  <view class="banner-section">
+    <swiper class="banner-swiper" indicator-dots="{{true}}" autoplay="{{true}}" interval="3000" duration="500">
+      <block wx:for="{{banners}}" wx:key="id">
+        <swiper-item>
+          <image class="banner-image" src="{{item.image_url}}" mode="aspectFill" bindtap="onBannerTap" data-url="{{item.link_url}}"></image>
+          <view class="banner-title">{{item.title}}</view>
+        </swiper-item>
+      </block>
+    </swiper>
+  </view>
+
+  <!-- 导航菜单 -->
+  <view class="nav-section">
+    <view class="nav-grid">
+      <view class="nav-item" bindtap="navigateTo" data-url="/pages/solution/detail">
+        <view class="nav-icon">
+          <image src="/images/solution.png" mode="aspectFit"></image>
+        </view>
+        <text class="nav-text">解决方案</text>
+      </view>
+      <view class="nav-item" bindtap="navigateTo" data-url="/pages/products/index">
+        <view class="nav-icon">
+          <image src="/images/products.png" mode="aspectFit"></image>
+        </view>
+        <text class="nav-text">产品服务</text>
+      </view>
+      <view class="nav-item" bindtap="navigateTo" data-url="/pages/about/index">
+        <view class="nav-icon">
+          <image src="/images/about.png" mode="aspectFit"></image>
+        </view>
+        <text class="nav-text">关于我们</text>
+      </view>
+      <view class="nav-item" bindtap="onContactTap">
+        <view class="nav-icon">
+          <image src="/images/contact.png" mode="aspectFit"></image>
+        </view>
+        <text class="nav-text">联系我们</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 核心解决方案 -->
+  <view class="solutions-section">
+    <view class="section-title">核心解决方案</view>
+    <view class="solutions-list">
+      <block wx:for="{{solutions}}" wx:key="id">
+        <view class="solution-card card" bindtap="onSolutionTap" data-id="{{item.id}}">
+          <view class="solution-content">
+            <view class="solution-icon">
+              <image src="{{item.icon_url}}" mode="aspectFit"></image>
+            </view>
+            <view class="solution-info">
+              <view class="solution-title">{{item.title}}</view>
+              <view class="solution-desc">{{item.description}}</view>
+            </view>
+          </view>
+          <view class="solution-action">
+            <text class="action-text">查看详情</text>
+            <text class="action-arrow">→</text>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 企业介绍 -->
+  <view class="company-section">
+    <view class="company-card card">
+      <view class="section-title">关于我们</view>
+      <view class="company-desc">
+        我们是一家专业的商务解决方案提供商，致力于为企业提供全方位的数字化转型服务。凭借多年的行业经验和专业团队，我们已成功为众多企业客户提供了优质的解决方案。
+      </view>
+      <view class="company-contact">
+        <button class="btn-primary" bindtap="onContactTap">联系我们</button>
+      </view>
+    </view>
+  </view>
+</view>
