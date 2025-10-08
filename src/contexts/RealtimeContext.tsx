@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { useBatchRealtime, useSyncStatus } from '../hooks/useRealtime'
-import { message } from 'antd'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react'
+import { useBatchRealtime, useSyncStatus, type RealtimePayload } from '../hooks/useRealtime'
+import { message, Tooltip } from 'antd'
 
 interface RealtimeContextType {
   isConnected: boolean
@@ -10,6 +10,7 @@ interface RealtimeContextType {
   startSync: () => void
   stopSync: () => void
   clearErrors: () => void
+  activeTables: string[]
 }
 
 const RealtimeContext = createContext<RealtimeContextType | undefined>(undefined)
@@ -19,42 +20,39 @@ interface RealtimeProviderProps {
 }
 
 export function RealtimeProvider({ children }: RealtimeProviderProps) {
-  const { isConnected, subscribeToTables, unsubscribeAll } = useBatchRealtime()
+  const { isConnected, subscribeToTables, unsubscribeAll, activeTables } = useBatchRealtime()
   const { lastSync, syncCount, errors, recordSync, recordError, clearErrors } = useSyncStatus()
   const [isActive, setIsActive] = useState(false)
 
-  const startSync = () => {
+  const startSync = useCallback(() => {
     if (isActive) return
 
     try {
-      // 订阅所有需要实时同步的表
-      const tableCallbacks = {
-        banners: (payload: any) => {
+      const tableCallbacks: Record<string, (payload: RealtimePayload<Record<string, unknown>>) => void> = {
+        banners: (payload) => {
           console.log('Banners updated:', payload)
           recordSync()
           message.success('轮播图数据已更新')
-          // 触发自定义事件，通知相关组件更新
           window.dispatchEvent(new CustomEvent('banners-updated', { detail: payload }))
         },
-        solutions: (payload: any) => {
+        solutions: (payload) => {
           console.log('Solutions updated:', payload)
           recordSync()
           message.success('解决方案数据已更新')
           window.dispatchEvent(new CustomEvent('solutions-updated', { detail: payload }))
         },
-        products: (payload: any) => {
+        products: (payload) => {
           console.log('Products updated:', payload)
           recordSync()
           message.success('产品数据已更新')
           window.dispatchEvent(new CustomEvent('products-updated', { detail: payload }))
         },
-        admins: (payload: any) => {
+        admins: (payload) => {
           console.log('Admins updated:', payload)
           recordSync()
-          // 管理员数据更新不显示消息，避免干扰
           window.dispatchEvent(new CustomEvent('admins-updated', { detail: payload }))
         },
-        visit_analytics: (payload: any) => {
+        visit_analytics: (payload) => {
           console.log('Analytics updated:', payload)
           recordSync()
           window.dispatchEvent(new CustomEvent('analytics-updated', { detail: payload }))
@@ -69,9 +67,9 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       recordError(errorMsg)
       message.error(errorMsg)
     }
-  }
+  }, [isActive, recordError, recordSync, subscribeToTables])
 
-  const stopSync = () => {
+  const stopSync = useCallback(() => {
     if (!isActive) return
 
     try {
@@ -83,19 +81,19 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       recordError(errorMsg)
       message.error(errorMsg)
     }
-  }
+  }, [isActive, recordError, unsubscribeAll])
 
   // 自动启动实时同步
   useEffect(() => {
     const timer = setTimeout(() => {
       startSync()
-    }, 2000) // 延迟2秒启动，确保组件完全加载
+    }, 2000)
 
     return () => {
       clearTimeout(timer)
       stopSync()
     }
-  }, [])
+  }, [startSync, stopSync])
 
   // 监听网络状态变化
   useEffect(() => {
@@ -118,17 +116,18 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
     }
-  }, [isActive, isConnected])
+  }, [isActive, isConnected, startSync, stopSync])
 
-  const contextValue: RealtimeContextType = {
+  const contextValue = useMemo<RealtimeContextType>(() => ({
     isConnected,
     lastSync,
     syncCount,
     errors,
     startSync,
     stopSync,
-    clearErrors
-  }
+    clearErrors,
+    activeTables,
+  }), [isConnected, lastSync, syncCount, errors, startSync, stopSync, clearErrors, activeTables])
 
   return (
     <RealtimeContext.Provider value={contextValue}>
@@ -147,10 +146,12 @@ export function useRealtimeContext() {
 
 // 实时同步状态指示器组件
 export function RealtimeIndicator() {
-  const { isConnected, lastSync, syncCount, errors } = useRealtimeContext()
+  const { isConnected, lastSync, syncCount, errors, activeTables } = useRealtimeContext()
+  const latestError = errors[errors.length - 1]
+  const title = isConnected ? '实时同步已连接' : '实时同步已断开'
 
   return (
-    <div style={{ 
+    <div style={{
       position: 'fixed', 
       top: 10, 
       right: 10, 
@@ -162,17 +163,29 @@ export function RealtimeIndicator() {
       fontSize: '12px',
       color: '#666'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <div 
-          style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            backgroundColor: isConnected ? '#52c41a' : '#ff4d4f'
-          }}
-        />
-        <span>{isConnected ? '实时同步' : '连接断开'}</span>
-      </div>
+      <Tooltip
+        title={
+          <div>
+            <div>{title}</div>
+            {activeTables.length > 0 && (
+              <div>订阅表：{activeTables.join(', ')}</div>
+            )}
+            {latestError && <div>最近错误：{latestError}</div>}
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: isConnected ? '#52c41a' : '#ff4d4f'
+            }}
+          />
+          <span>{isConnected ? '实时同步' : '连接断开'}</span>
+        </div>
+      </Tooltip>
       {lastSync && (
         <div style={{ marginTop: '4px', fontSize: '11px', color: '#999' }}>
           最后同步: {lastSync.toLocaleTimeString()}

@@ -1,56 +1,85 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../../supabase/config'
 import { RealtimeChannel } from '@supabase/supabase-js'
 
-// 实时数据同步Hook
-interface UseRealtimeOptions {
-  onInsert?: (payload: any) => void
-  onUpdate?: (payload: any) => void
-  onDelete?: (payload: any) => void
+type IdentifiableRecord = { id?: string | number } & Record<string, unknown>
+
+type RealtimePayload<T> = {
+  new: T | null
+  old: T | null
+  [key: string]: unknown
 }
 
-export function useRealtime<T>(tableName: string, initialData: T[] = [], options: UseRealtimeOptions = {}) {
+interface UseRealtimeOptions<T> {
+  onInsert?: (payload: RealtimePayload<T>) => void
+  onUpdate?: (payload: RealtimePayload<T>) => void
+  onDelete?: (payload: RealtimePayload<T>) => void
+}
+
+export function useRealtime<T extends IdentifiableRecord>(tableName: string, initialData: T[] = [], options: UseRealtimeOptions<T> = {}) {
   const [data, setData] = useState<T[]>(initialData)
   const [loading, setLoading] = useState(false)
+  const insertRef = useRef(options.onInsert)
+  const updateRef = useRef(options.onUpdate)
+  const deleteRef = useRef(options.onDelete)
+
+  useEffect(() => {
+    insertRef.current = options.onInsert
+  }, [options.onInsert])
+
+  useEffect(() => {
+    updateRef.current = options.onUpdate
+  }, [options.onUpdate])
+
+  useEffect(() => {
+    deleteRef.current = options.onDelete
+  }, [options.onDelete])
+
+  useEffect(() => {
+    setData(initialData)
+  }, [initialData])
 
   useEffect(() => {
     if (!tableName) return
 
     setLoading(true)
-    
+
     const channel = supabase
       .channel(`public:${tableName}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: tableName },
-        (payload) => {
-          console.log('Insert received!', payload)
-          setData(current => [payload.new as T, ...current])
-          options.onInsert?.(payload)
+        (payload: RealtimePayload<T>) => {
+          if (payload.new) {
+            setData(current => [payload.new as T, ...current])
+          }
+          insertRef.current?.(payload)
         }
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: tableName },
-        (payload) => {
-          console.log('Update received!', payload)
-          setData(current => 
-            current.map(item => 
-              (item as any).id === (payload.new as any).id ? payload.new as T : item
+        (payload: RealtimePayload<T>) => {
+          if (payload.new && payload.new.id !== undefined) {
+            setData(current =>
+              current.map(item =>
+                item.id === payload.new?.id ? (payload.new as T) : item
+              )
             )
-          )
-          options.onUpdate?.(payload)
+          }
+          updateRef.current?.(payload)
         }
       )
       .on(
         'postgres_changes',
         { event: 'DELETE', schema: 'public', table: tableName },
-        (payload) => {
-          console.log('Delete received!', payload)
-          setData(current => 
-            current.filter(item => (item as any).id !== (payload.old as any).id)
-          )
-          options.onDelete?.(payload)
+        (payload: RealtimePayload<T>) => {
+          if (payload.old && payload.old.id !== undefined) {
+            setData(current =>
+              current.filter(item => item.id !== payload.old?.id)
+            )
+          }
+          deleteRef.current?.(payload)
         }
       )
       .subscribe()
@@ -60,7 +89,7 @@ export function useRealtime<T>(tableName: string, initialData: T[] = [], options
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [tableName, options.onInsert, options.onUpdate, options.onDelete])
+  }, [tableName])
 
   return { data, loading }
 }
@@ -68,9 +97,21 @@ export function useRealtime<T>(tableName: string, initialData: T[] = [], options
 // 批量数据同步Hook
 export function useBatchRealtime() {
   const [isConnected, setIsConnected] = useState(false)
-  const [channels, setChannels] = useState<RealtimeChannel[]>([])
+  const channelsRef = useRef<RealtimeChannel[]>([])
+  const [activeTables, setActiveTables] = useState<string[]>([])
 
-  const subscribeToTables = (tableNames: string[], callbacks: Record<string, (payload: any) => void>) => {
+  const unsubscribeAll = useCallback(() => {
+    channelsRef.current.forEach(channel => {
+      supabase.removeChannel(channel)
+    })
+    channelsRef.current = []
+    setActiveTables([])
+    setIsConnected(false)
+  }, [])
+
+  const subscribeToTables = useCallback((tableNames: string[], callbacks: Record<string, (payload: RealtimePayload<Record<string, unknown>>) => void>) => {
+    unsubscribeAll()
+
     const newChannels: RealtimeChannel[] = []
 
     tableNames.forEach(tableName => {
@@ -83,14 +124,14 @@ export function useBatchRealtime() {
             schema: 'public',
             table: tableName,
           },
-          (payload) => {
-            if (callbacks[tableName]) {
-              callbacks[tableName](payload)
+          (payload: RealtimePayload<Record<string, unknown>>) => {
+            const handler = callbacks[tableName]
+            if (handler) {
+              handler(payload)
             }
           }
         )
         .subscribe((status) => {
-          console.log(`Batch realtime status for ${tableName}:`, status)
           if (status === 'SUBSCRIBED') {
             setIsConnected(true)
           }
@@ -99,29 +140,25 @@ export function useBatchRealtime() {
       newChannels.push(channel)
     })
 
-    setChannels(prev => [...prev, ...newChannels])
-  }
-
-  const unsubscribeAll = () => {
-    channels.forEach(channel => {
-      supabase.removeChannel(channel)
-    })
-    setChannels([])
-    setIsConnected(false)
-  }
+    channelsRef.current = newChannels
+    setActiveTables(tableNames)
+  }, [unsubscribeAll])
 
   useEffect(() => {
     return () => {
       unsubscribeAll()
     }
-  }, [])
+  }, [unsubscribeAll])
 
   return {
     isConnected,
     subscribeToTables,
-    unsubscribeAll
+    unsubscribeAll,
+    activeTables,
   }
 }
+
+export type { RealtimePayload }
 
 // 数据同步状态Hook
 export function useSyncStatus() {
