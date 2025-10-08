@@ -3,19 +3,13 @@
  */
 
 import express, { type Request, type Response, type NextFunction }  from 'express';
-import cors from 'cors';
-import path from 'path';
+import cors, { type CorsOptions } from 'cors';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.js';
 import bannerRoutes from './routes/banners.js';
 import solutionRoutes from './routes/solutions.js';
 import productRoutes from './routes/products.js';
 import analyticsRoutes from './routes/analytics.js';
-
-// for esm mode
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // load env
 dotenv.config();
@@ -24,10 +18,25 @@ dotenv.config();
 const app: express.Application = express();
 
 // CORS配置
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.vercel.app', 'https://your-custom-domain.com']
-    : ['http://localhost:5173', 'http://localhost:3000'],
+const envOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+const fallbackOrigins = process.env.NODE_ENV === 'production'
+  ? []
+  : ['http://localhost:5173', 'http://localhost:3000'];
+
+const allowedOrigins = envOrigins.length > 0 ? envOrigins : fallbackOrigins;
+
+const corsOptions: CorsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

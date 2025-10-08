@@ -1,13 +1,9 @@
 import React from 'react'
-import { Form, Input, Button, Card, message } from 'antd'
+import { Form, Input, Button, Card } from 'antd'
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import './Login.css'
-
-// API配置
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-api-domain.com/api' 
-  : 'http://localhost:3001/api'
+import { useAuth } from '../contexts/AuthContext'
 
 interface LoginForm {
   username: string
@@ -18,51 +14,16 @@ const Login: React.FC = () => {
   const navigate = useNavigate()
   const [form] = Form.useForm()
   const [loading, setLoading] = React.useState(false)
+  const { login } = useAuth()
 
   const onFinish = async (values: LoginForm) => {
     setLoading(true)
-    
+
     try {
-      // 调用真实的登录API
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      })
-      
-      const data = await response.json()
-      
-      if (response.ok && data.success) {
-        // 保存token和用户信息
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('userInfo', JSON.stringify(data.user))
-        
-        message.success('登录成功！')
-        navigate('/dashboard')
-      } else {
-        message.error(data.message || '登录失败！')
-      }
+      await login(values)
+      navigate('/dashboard', { replace: true })
     } catch (error) {
       console.error('登录错误:', error)
-      
-      // 如果API调用失败，使用默认账号进行验证
-      if (values.username === 'admin' && values.password === 'admin123') {
-        // 保存默认token和用户信息
-        localStorage.setItem('token', 'mock-jwt-token')
-        localStorage.setItem('userInfo', JSON.stringify({
-          id: 1,
-          username: 'admin',
-          name: '管理员',
-          role: 'admin'
-        }))
-        
-        message.success('登录成功！')
-        navigate('/dashboard')
-      } else {
-        message.error('网络错误或用户名密码错误，请重试！')
-      }
     } finally {
       setLoading(false)
     }

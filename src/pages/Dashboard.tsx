@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Card,
   Row,
@@ -28,11 +28,7 @@ import {
 import type { ColumnsType } from 'antd/es/table'
 import { useRealtimeContext } from '../contexts/RealtimeContext'
 import { useRealtime } from '../hooks/useRealtime'
-
-// API配置
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-api-domain.com/api' 
-  : 'http://localhost:3001/api'
+import { apiRequest } from '../utils/apiClient'
 
 const { RangePicker } = DatePicker
 const { Option } = Select
@@ -56,11 +52,60 @@ interface RecentActivity {
   avatar?: string
 }
 
+interface DashboardStatistics {
+  totalConsultations: number
+  totalProducts: number
+  totalSolutions: number
+  activeUsers: number
+  consultationGrowth: number
+  productGrowth: number
+  solutionGrowth: number
+  userGrowth: number
+}
+
+type ApiResponse<T> = {
+  success?: boolean
+  data?: T
+  message?: string
+}
+
+type UnknownRecord = Record<string, unknown>
+type RealtimePayload<T extends UnknownRecord> = {
+  new: T | null
+  old: T | null
+  [key: string]: unknown
+}
+
+type CryptoWithUUID = Crypto & { randomUUID?: () => string }
+
+const isRecord = (value: unknown): value is UnknownRecord => {
+  return typeof value === 'object' && value !== null
+}
+
+const createStableKey = () => {
+  const cryptoObj = typeof window !== 'undefined' ? window.crypto : undefined
+  if (cryptoObj && typeof (cryptoObj as CryptoWithUUID).randomUUID === 'function') {
+    return (cryptoObj as CryptoWithUUID).randomUUID!()
+  }
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
+const formatDisplayTime = (value?: string) => {
+  if (!value) {
+    return new Date().toLocaleString()
+  }
+  const parsed = new Date(value)
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toLocaleString()
+  }
+  return value
+}
+
 const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [consultations, setConsultations] = useState<ConsultationRecord[]>([])
   const [activities, setActivities] = useState<RecentActivity[]>([])
-  const [statistics, setStatistics] = useState({
+  const [statistics, setStatistics] = useState<DashboardStatistics>({
     totalConsultations: 0,
     totalProducts: 0,
     totalSolutions: 0,
@@ -70,110 +115,171 @@ const Dashboard: React.FC = () => {
     solutionGrowth: 0,
     userGrowth: 0
   })
-  
+
   const { isConnected } = useRealtimeContext()
-  
-  // 实时监听咨询数据变化
-  const { data: realtimeConsultations } = useRealtime('consultations', [], {
-    onInsert: (payload) => {
-      message.success('收到新的咨询请求')
-      loadDashboardData() // 重新加载数据
-    },
-    onUpdate: (payload) => {
-      message.info('咨询状态已更新')
-      loadDashboardData()
-    },
-    onDelete: (payload) => {
-      message.warning('咨询记录已删除')
-      loadDashboardData()
-    }
-  })
-  
-  // 实时监听产品数据变化
-  const { data: realtimeProducts } = useRealtime('products', [], {
-    onInsert: () => loadDashboardData(),
-    onUpdate: () => loadDashboardData(),
-    onDelete: () => loadDashboardData()
-  })
-  
-  // 实时监听解决方案数据变化
-  const { data: realtimeSolutions } = useRealtime('solutions', [], {
-    onInsert: () => loadDashboardData(),
-    onUpdate: () => loadDashboardData(),
-    onDelete: () => loadDashboardData()
-  })
 
-  // 模拟数据加载
-  useEffect(() => {
-    loadDashboardData()
+  const defaultConsultations = useMemo<ConsultationRecord[]>(() => [
+    {
+      key: '1',
+      id: 'C001',
+      customerName: '张先生',
+      phone: '138****8888',
+      product: '企业级ERP系统',
+      status: 'pending',
+      createTime: '2024-01-15 10:30:00'
+    },
+    {
+      key: '2',
+      id: 'C002',
+      customerName: '李女士',
+      phone: '139****9999',
+      product: 'CRM客户管理系统',
+      status: 'processing',
+      createTime: '2024-01-15 09:15:00'
+    },
+    {
+      key: '3',
+      id: 'C003',
+      customerName: '王总',
+      phone: '137****7777',
+      product: '数字化转型解决方案',
+      status: 'completed',
+      createTime: '2024-01-14 16:45:00'
+    }
+  ], [])
+
+  const defaultActivities = useMemo<RecentActivity[]>(() => [
+    {
+      id: '1',
+      type: 'consultation',
+      title: '新的咨询请求',
+      description: '张先生咨询企业级ERP系统',
+      time: '2小时前'
+    },
+    {
+      id: '2',
+      type: 'product',
+      title: '产品更新',
+      description: 'CRM系统新增客户画像功能',
+      time: '4小时前'
+    },
+    {
+      id: '3',
+      type: 'solution',
+      title: '方案发布',
+      description: '发布了新的云服务解决方案',
+      time: '1天前'
+    }
+  ], [])
+
+  const normalizeConsultation = useCallback((item: unknown, index?: number): ConsultationRecord => {
+    const record = isRecord(item) ? item : {}
+
+    const idSource = record.id ?? record.key
+    const statusSource = record.status ?? record.consultation_status
+    const statusValue = typeof statusSource === 'string' && ['pending', 'processing', 'completed'].includes(statusSource)
+      ? (statusSource as ConsultationRecord['status'])
+      : 'pending'
+
+    return {
+      key: idSource ? String(idSource) : index !== undefined ? index.toString() : createStableKey(),
+      id: idSource ? String(idSource) : createStableKey(),
+      customerName: typeof record.customerName === 'string'
+        ? record.customerName
+        : typeof record.customer_name === 'string'
+          ? record.customer_name
+          : '未知客户',
+      phone: typeof record.phone === 'string'
+        ? record.phone
+        : typeof record.customer_phone === 'string'
+          ? record.customer_phone
+          : '未知电话',
+      product: typeof record.product === 'string'
+        ? record.product
+        : typeof record.product_name === 'string'
+          ? record.product_name
+          : '未指定产品',
+      status: statusValue,
+      createTime: formatDisplayTime(
+        typeof record.createTime === 'string'
+          ? record.createTime
+          : typeof record.create_time === 'string'
+            ? record.create_time
+            : typeof record.created_at === 'string'
+              ? record.created_at
+              : undefined
+      )
+    }
   }, [])
-  
-  // 监听实时连接状态
-  useEffect(() => {
-    if (isConnected) {
-      message.success('实时数据同步已连接')
-    } else {
-      message.warning('实时数据同步已断开')
-    }
-  }, [isConnected])
 
-  const loadDashboardData = async () => {
-    setLoading(true)
-    
-    try {
-      const token = localStorage.getItem('token')
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-      
-      // 并行加载所有数据
-      const [statsRes, consultationsRes, activitiesRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/analytics/dashboard-stats`, { headers }),
-        fetch(`${API_BASE_URL}/analytics/recent-consultations`, { headers }),
-        fetch(`${API_BASE_URL}/analytics/recent-activities`, { headers })
-      ])
-      
-      // 处理统计数据
-      if (statsRes.ok) {
-        const statsData = await statsRes.json()
-        if (statsData.success) {
-          setStatistics(statsData.data)
-        }
-      }
-      
-      // 处理咨询数据
-      if (consultationsRes.ok) {
-        const consultationsData = await consultationsRes.json()
-        if (consultationsData.success) {
-          setConsultations(consultationsData.data.map((item: any, index: number) => ({
-            ...item,
-            key: item.id || index.toString()
-          })))
-        }
-      }
-      
-      // 处理活动数据
-      if (activitiesRes.ok) {
-        const activitiesData = await activitiesRes.json()
-        if (activitiesData.success) {
-          setActivities(activitiesData.data)
-        }
-      }
-      
-    } catch (error) {
-      console.error('加载仪表盘数据失败:', error)
-      message.error('加载数据失败，显示默认数据')
-      
-      // 使用默认数据
-      loadDefaultData()
-    } finally {
-      setLoading(false)
+  const normalizeActivity = useCallback((item: unknown): RecentActivity => {
+    const record = isRecord(item) ? item : {}
+    const typeSource = record.type
+    const typeValue: RecentActivity['type'] = typeSource === 'product' || typeSource === 'solution'
+      ? typeSource
+      : 'consultation'
+
+    return {
+      id: record.id ? String(record.id) : createStableKey(),
+      type: typeValue,
+      title: typeof record.title === 'string'
+        ? record.title
+        : typeof record.customerName === 'string'
+          ? record.customerName
+          : typeof record.customer_name === 'string'
+            ? record.customer_name
+            : '最新动态',
+      description: typeof record.description === 'string'
+        ? record.description
+        : typeof record.product === 'string'
+          ? record.product
+          : typeof record.product_name === 'string'
+            ? record.product_name
+            : '有新的动态产生',
+      time: formatDisplayTime(
+        typeof record.time === 'string'
+          ? record.time
+          : typeof record.create_time === 'string'
+            ? record.create_time
+            : typeof record.created_at === 'string'
+              ? record.created_at
+              : undefined
+      ),
+      avatar: typeof record.avatar === 'string' ? record.avatar : undefined
     }
-  }
-  
-  const loadDefaultData = () => {
-    // 默认统计数据
+  }, [])
+
+  const pushActivity = useCallback((activity: RecentActivity) => {
+    setActivities(prev => {
+      const filtered = prev.filter(item => item.id !== activity.id)
+      return [activity, ...filtered].slice(0, 10)
+    })
+  }, [])
+
+  const createConsultationActivity = useCallback((payload: RealtimePayload<UnknownRecord>, action: 'insert' | 'update' | 'delete'): RecentActivity => {
+    const source = action === 'delete' ? payload.old : payload.new
+    const record = isRecord(source) ? source : {}
+    const customer = typeof record.customer_name === 'string'
+      ? record.customer_name
+      : typeof record.customerName === 'string'
+        ? record.customerName
+        : '客户'
+    const descriptionMap = {
+      insert: `${customer} 提交了新的咨询`,
+      update: `${customer} 的咨询状态发生变化`,
+      delete: `${customer} 的咨询被删除`
+    }
+
+    return {
+      id: `${action}-${record.id ?? createStableKey()}`,
+      type: 'consultation',
+      title: action === 'insert' ? '新的咨询请求' : action === 'update' ? '咨询状态更新' : '咨询记录删除',
+      description: descriptionMap[action],
+      time: new Date().toLocaleString()
+    }
+  }, [])
+
+  const loadDefaultData = useCallback(() => {
     setStatistics({
       totalConsultations: 1128,
       totalProducts: 24,
@@ -184,69 +290,125 @@ const Dashboard: React.FC = () => {
       solutionGrowth: -2,
       userGrowth: 15
     })
-    
-    // 默认咨询记录数据
-    const mockConsultations: ConsultationRecord[] = [
-      {
-        key: '1',
-        id: 'C001',
-        customerName: '张先生',
-        phone: '138****8888',
-        product: '企业级ERP系统',
-        status: 'pending',
-        createTime: '2024-01-15 10:30:00'
-      },
-      {
-        key: '2',
-        id: 'C002',
-        customerName: '李女士',
-        phone: '139****9999',
-        product: 'CRM客户管理系统',
-        status: 'processing',
-        createTime: '2024-01-15 09:15:00'
-      },
-      {
-        key: '3',
-        id: 'C003',
-        customerName: '王总',
-        phone: '137****7777',
-        product: '数字化转型解决方案',
-        status: 'completed',
-        createTime: '2024-01-14 16:45:00'
+    setConsultations(defaultConsultations)
+    setActivities(defaultActivities)
+  }, [defaultActivities, defaultConsultations])
+
+  const fetchDashboardStats = useCallback(async () => {
+    try {
+      const response = await apiRequest<ApiResponse<DashboardStatistics>>('/analytics/dashboard-stats', { suppressErrorMessage: true })
+      if (response?.success && response.data) {
+        setStatistics(response.data)
       }
-    ]
+    } catch (error) {
+      console.error('获取统计数据失败:', error)
+    }
+  }, [])
 
-    // 默认最近活动数据
-    const mockActivities: RecentActivity[] = [
-      {
-        id: '1',
-        type: 'consultation',
-        title: '新的咨询请求',
-        description: '张先生咨询企业级ERP系统',
-        time: '2小时前'
-      },
-      {
-        id: '2',
-        type: 'product',
-        title: '产品更新',
-        description: 'CRM系统新增客户画像功能',
-        time: '4小时前'
-      },
-      {
-        id: '3',
-        type: 'solution',
-        title: '方案发布',
-        description: '发布了新的云服务解决方案',
-        time: '1天前'
+  const fetchConsultations = useCallback(async () => {
+    try {
+      const response = await apiRequest<ApiResponse<unknown[]>>('/analytics/recent-consultations', { suppressErrorMessage: true })
+      if (response?.success && Array.isArray(response.data)) {
+        setConsultations(response.data.map((item, index) => normalizeConsultation(item, index)))
+      } else {
+        setConsultations(defaultConsultations)
       }
-    ]
+    } catch (error) {
+      console.error('获取咨询数据失败:', error)
+      message.error('加载咨询数据失败，显示默认数据')
+      setConsultations(defaultConsultations)
+    }
+  }, [defaultConsultations, normalizeConsultation])
 
-    setConsultations(mockConsultations)
-    setActivities(mockActivities)
-  }
+  const fetchActivities = useCallback(async () => {
+    try {
+      const response = await apiRequest<ApiResponse<unknown[]>>('/analytics/recent-activities', { suppressErrorMessage: true })
+      if (response?.success && Array.isArray(response.data)) {
+        setActivities(response.data.map(normalizeActivity))
+      } else {
+        setActivities(defaultActivities)
+      }
+    } catch (error) {
+      console.error('获取活动数据失败:', error)
+      setActivities(defaultActivities)
+    }
+  }, [defaultActivities, normalizeActivity])
 
-  // 咨询记录表格列配置
-  const consultationColumns: ColumnsType<ConsultationRecord> = [
+  const loadDashboardData = useCallback(async () => {
+    setLoading(true)
+    try {
+      await Promise.all([
+        fetchDashboardStats(),
+        fetchConsultations(),
+        fetchActivities()
+      ])
+    } catch (error) {
+      console.error('加载仪表盘数据失败:', error)
+      message.error('加载数据失败，显示默认数据')
+      loadDefaultData()
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchActivities, fetchConsultations, fetchDashboardStats, loadDefaultData])
+
+  const handleConsultationInsert = useCallback((payload: RealtimePayload<UnknownRecord>) => {
+    const record = normalizeConsultation(payload.new)
+    message.success('收到新的咨询请求')
+    setConsultations(prev => {
+      const exists = prev.some(item => item.id === record.id)
+      return exists ? prev : [record, ...prev].slice(0, 20)
+    })
+    pushActivity(createConsultationActivity(payload, 'insert'))
+    fetchDashboardStats()
+  }, [createConsultationActivity, fetchDashboardStats, normalizeConsultation, pushActivity])
+
+  const handleConsultationUpdate = useCallback((payload: RealtimePayload<UnknownRecord>) => {
+    const record = normalizeConsultation(payload.new)
+    message.info('咨询状态已更新')
+    setConsultations(prev => prev.map(item => (item.id === record.id ? record : item)))
+    pushActivity(createConsultationActivity(payload, 'update'))
+    fetchDashboardStats()
+  }, [createConsultationActivity, fetchDashboardStats, normalizeConsultation, pushActivity])
+
+  const handleConsultationDelete = useCallback((payload: RealtimePayload<UnknownRecord>) => {
+    const recordId = isRecord(payload.old) ? payload.old.id : undefined
+    message.warning('咨询记录已删除')
+    setConsultations(prev => prev.filter(item => item.id !== recordId))
+    pushActivity(createConsultationActivity(payload, 'delete'))
+    fetchDashboardStats()
+  }, [createConsultationActivity, fetchDashboardStats, pushActivity])
+
+  useRealtime('consultations', [], {
+    onInsert: handleConsultationInsert,
+    onUpdate: handleConsultationUpdate,
+    onDelete: handleConsultationDelete
+  })
+
+  useRealtime('products', [], {
+    onInsert: fetchDashboardStats,
+    onUpdate: fetchDashboardStats,
+    onDelete: fetchDashboardStats
+  })
+
+  useRealtime('solutions', [], {
+    onInsert: fetchDashboardStats,
+    onUpdate: fetchDashboardStats,
+    onDelete: fetchDashboardStats
+  })
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [loadDashboardData])
+
+  useEffect(() => {
+    if (isConnected) {
+      message.success('实时数据同步已连接')
+    } else {
+      message.warning('实时数据同步已断开')
+    }
+  }, [isConnected])
+
+  const consultationColumns: ColumnsType<ConsultationRecord> = useMemo(() => [
     {
       title: '咨询编号',
       dataIndex: 'id',
@@ -271,13 +433,13 @@ const Dashboard: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => {
+      render: (status: ConsultationRecord['status']) => {
         const statusMap = {
           pending: { color: 'orange', text: '待处理' },
           processing: { color: 'blue', text: '处理中' },
           completed: { color: 'green', text: '已完成' }
         }
-        const { color, text } = statusMap[status as keyof typeof statusMap]
+        const { color, text } = statusMap[status]
         return <Tag color={color}>{text}</Tag>
       }
     },
@@ -289,7 +451,7 @@ const Dashboard: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: (_, record) => (
+      render: () => (
         <Space size="middle">
           <Button type="link" icon={<EyeOutlined />} size="small">
             查看
@@ -300,7 +462,7 @@ const Dashboard: React.FC = () => {
         </Space>
       ),
     },
-  ]
+  ], [])
 
   return (
     <div>
@@ -313,11 +475,11 @@ const Dashboard: React.FC = () => {
               value={statistics.totalConsultations}
               prefix={<MessageOutlined />}
               suffix={
-                <span style={{ 
-                  fontSize: 14, 
-                  color: statistics.consultationGrowth >= 0 ? '#52c41a' : '#ff4d4f' 
+                <span style={{
+                  fontSize: 14,
+                  color: statistics.consultationGrowth >= 0 ? '#52c41a' : '#ff4d4f'
                 }}>
-                  {statistics.consultationGrowth >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />} 
+                  {statistics.consultationGrowth >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
                   {Math.abs(statistics.consultationGrowth)}%
                 </span>
               }
@@ -331,11 +493,11 @@ const Dashboard: React.FC = () => {
               value={statistics.totalProducts}
               prefix={<ShoppingOutlined />}
               suffix={
-                <span style={{ 
-                  fontSize: 14, 
-                  color: statistics.productGrowth >= 0 ? '#52c41a' : '#ff4d4f' 
+                <span style={{
+                  fontSize: 14,
+                  color: statistics.productGrowth >= 0 ? '#52c41a' : '#ff4d4f'
                 }}>
-                  {statistics.productGrowth >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />} 
+                  {statistics.productGrowth >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
                   {Math.abs(statistics.productGrowth)}%
                 </span>
               }
@@ -349,11 +511,11 @@ const Dashboard: React.FC = () => {
               value={statistics.totalSolutions}
               prefix={<SolutionOutlined />}
               suffix={
-                <span style={{ 
-                  fontSize: 14, 
-                  color: statistics.solutionGrowth >= 0 ? '#52c41a' : '#ff4d4f' 
+                <span style={{
+                  fontSize: 14,
+                  color: statistics.solutionGrowth >= 0 ? '#52c41a' : '#ff4d4f'
                 }}>
-                  {statistics.solutionGrowth >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />} 
+                  {statistics.solutionGrowth >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
                   {Math.abs(statistics.solutionGrowth)}%
                 </span>
               }
@@ -367,11 +529,11 @@ const Dashboard: React.FC = () => {
               value={statistics.activeUsers}
               prefix={<UserOutlined />}
               suffix={
-                <span style={{ 
-                  fontSize: 14, 
-                  color: statistics.userGrowth >= 0 ? '#52c41a' : '#ff4d4f' 
+                <span style={{
+                  fontSize: 14,
+                  color: statistics.userGrowth >= 0 ? '#52c41a' : '#ff4d4f'
                 }}>
-                  {statistics.userGrowth >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />} 
+                  {statistics.userGrowth >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
                   {Math.abs(statistics.userGrowth)}%
                 </span>
               }
@@ -423,8 +585,8 @@ const Dashboard: React.FC = () => {
       {/* 最近咨询和活动 */}
       <Row gutter={16}>
         <Col span={16}>
-          <Card 
-            title="最近咨询" 
+          <Card
+            title="最近咨询"
             extra={
               <Button type="link" href="#/consultations">
                 查看全部
@@ -449,14 +611,14 @@ const Dashboard: React.FC = () => {
                 <List.Item>
                   <List.Item.Meta
                     avatar={
-                      <Avatar 
+                      <Avatar
                         icon={
                           item.type === 'consultation' ? <MessageOutlined /> :
                           item.type === 'product' ? <ShoppingOutlined /> :
                           <SolutionOutlined />
                         }
                         style={{
-                          backgroundColor: 
+                          backgroundColor:
                             item.type === 'consultation' ? '#1890ff' :
                             item.type === 'product' ? '#52c41a' :
                             '#722ed1'

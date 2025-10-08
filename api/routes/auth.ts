@@ -5,7 +5,8 @@
 import { Router, type Request, type Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { supabaseAdmin, TABLES, type User, type Admin } from '../config/supabase.js';
+import { supabaseAdmin, TABLES } from '../config/supabase.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -13,28 +14,15 @@ const router = Router();
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
+      user?: {
+        id: string;
+        username: string;
+        role?: string;
+        email?: string;
+      };
     }
   }
 }
-
-// JWT中间件
-export const authenticateToken = (req: Request, res: Response, next: any) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ success: false, message: '访问令牌缺失' });
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET || 'default-secret', (err: any, user: any) => {
-    if (err) {
-      return res.status(403).json({ success: false, message: '令牌无效' });
-    }
-    req.user = user;
-    next();
-  });
-};
 
 /**
  * Admin Register
@@ -177,8 +165,13 @@ router.post('/logout', async (req: Request, res: Response): Promise<void> => {
  */
 router.get('/verify', authenticateToken, async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req as any).user.id;
-    
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ success: false, message: '用户未认证' });
+      return;
+    }
+
     const { data: admin, error } = await supabaseAdmin
       .from(TABLES.ADMINS)
       .select('id, username, email, role')

@@ -129,8 +129,12 @@ pnpm preview
 ### 环境变量
 创建 `.env.local` 文件配置环境变量：
 ```env
-# API 基础地址
+# API 基础地址（前端）
 VITE_API_BASE_URL=https://api.example.com
+
+# 后端安全配置
+JWT_SECRET=super-secure-secret
+CORS_ORIGINS=https://admin.example.com,https://miniapp.example.com
 
 # 其他配置...
 ```
@@ -185,7 +189,7 @@ A: 检查以下几点：
 3. 查看调试器中的错误信息
 
 ### Q: 管理后台登录失败？
-A: 目前使用模拟登录，用户名密码任意输入即可。实际部署时需要对接真实的认证系统。
+A: 部署环境下需要确保后端 `JWT_SECRET`、`CORS_ORIGINS` 已正确配置，并提供有效的管理员账号。开发阶段可使用默认账号 `admin/admin123`，同时后端会在应用启动时自动校验已有令牌的有效性。
 
 ### Q: 如何添加新的页面？
 A: 

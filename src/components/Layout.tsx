@@ -1,15 +1,6 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import {
-  Layout as AntLayout,
-  Menu,
-  Button,
-  Avatar,
-  Dropdown,
-  Space,
-  theme,
-  Breadcrumb
-} from 'antd'
+import { Layout as AntLayout, Menu, Button, Avatar, Dropdown, Space, theme, Breadcrumb } from 'antd'
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -24,6 +15,7 @@ import {
   LogoutOutlined,
   HomeOutlined
 } from '@ant-design/icons'
+import { useAuth } from '../contexts/AuthContext'
 
 const { Header, Sider, Content } = AntLayout
 
@@ -34,6 +26,8 @@ const Layout: React.FC = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken()
+  const { user, logout } = useAuth()
+  const displayName = useMemo(() => user?.name || user?.username || '管理员', [user])
 
   // 菜单项配置
   const menuItems = [
@@ -142,8 +136,7 @@ const Layout: React.FC = () => {
   // 处理用户菜单点击
   const handleUserMenuClick = ({ key }: { key: string }) => {
     if (key === 'logout') {
-      localStorage.removeItem('token')
-      localStorage.removeItem('userInfo')
+      logout()
       navigate('/login')
     } else if (key === 'settings') {
       navigate('/settings')
@@ -206,7 +199,7 @@ const Layout: React.FC = () => {
             >
               <Space style={{ cursor: 'pointer' }}>
                 <Avatar icon={<UserOutlined />} />
-                <span>管理员</span>
+                <span>{displayName}</span>
               </Space>
             </Dropdown>
           </Space>
