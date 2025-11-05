@@ -11,6 +11,7 @@ import bannerRoutes from './routes/banners.js';
 import solutionRoutes from './routes/solutions.js';
 import productRoutes from './routes/products.js';
 import analyticsRoutes from './routes/analytics.js';
+import userManagementRoutes from './routes/userManagement.js';
 // for esm mode
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,6 +38,7 @@ app.use('/api/banners', bannerRoutes);
 app.use('/api/solutions', solutionRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/user-management', userManagementRoutes);
 /**
  * health
  */

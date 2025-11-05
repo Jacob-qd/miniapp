@@ -133,3 +133,307 @@ export const mockAnalytics = {
         { date: '2024-01-07', visits: 165 }
     ]
 };
+export const mockUserMenus = [
+    {
+        id: 'dashboard',
+        name: '仪表盘',
+        path: '/dashboard',
+        icon: 'DashboardOutlined',
+        order: 1,
+        description: '业务指标与运营概览',
+        actions: ['view', 'export'],
+        children: [
+            {
+                id: 'dashboard-realtime',
+                name: '实时监控',
+                path: '/dashboard/realtime',
+                icon: 'AreaChartOutlined',
+                order: 1,
+                description: '实时监控关键业务指标，支持异常预警和通知',
+                actions: ['view', 'export', 'subscribe']
+            },
+            {
+                id: 'dashboard-analysis',
+                name: '运营分析',
+                path: '/dashboard/analysis',
+                icon: 'FundOutlined',
+                order: 2,
+                description: '多维度分析平台表现，支持历史数据对比',
+                actions: ['view', 'export']
+            }
+        ]
+    },
+    {
+        id: 'content-center',
+        name: '内容中心',
+        path: '/content',
+        icon: 'AppstoreOutlined',
+        order: 2,
+        description: '统一管理业务线内容与资源',
+        actions: ['view'],
+        children: [
+            {
+                id: 'solutions',
+                name: '解决方案',
+                path: '/solutions',
+                icon: 'SolutionOutlined',
+                order: 1,
+                description: '管理解决方案条目、案例与排序',
+                actions: ['view', 'create', 'update', 'publish']
+            },
+            {
+                id: 'products',
+                name: '产品服务',
+                path: '/products',
+                icon: 'ShoppingOutlined',
+                order: 2,
+                description: '维护产品信息、功能亮点与价格策略',
+                actions: ['view', 'create', 'update']
+            },
+            {
+                id: 'banners',
+                name: '轮播图',
+                path: '/banners',
+                icon: 'PictureOutlined',
+                order: 3,
+                description: '管理首页轮播图、投放计划与曝光数据',
+                actions: ['view', 'create', 'update', 'delete']
+            },
+            {
+                id: 'consultations',
+                name: '线索管理',
+                path: '/consultations',
+                icon: 'MessageOutlined',
+                order: 4,
+                description: '处理用户咨询与销售线索流转',
+                actions: ['view', 'assign', 'close']
+            }
+        ]
+    },
+    {
+        id: 'system-admin',
+        name: '系统管理',
+        path: '/system',
+        icon: 'SettingOutlined',
+        order: 3,
+        description: '账号、权限、参数配置等系统功能',
+        actions: ['view'],
+        children: [
+            {
+                id: 'user-management',
+                name: '用户管理',
+                path: '/user-management',
+                icon: 'TeamOutlined',
+                order: 1,
+                description: '维护后台用户、角色权限与功能分配',
+                actions: ['view', 'create', 'update', 'delete', 'reset-password']
+            },
+            {
+                id: 'role-management',
+                name: '角色权限',
+                path: '/user-management/roles',
+                icon: 'SafetyCertificateOutlined',
+                order: 2,
+                description: '配置角色权限范围、菜单与操作能力',
+                actions: ['view', 'create', 'update', 'delete']
+            },
+            {
+                id: 'settings',
+                name: '系统设置',
+                path: '/settings',
+                icon: 'ToolOutlined',
+                order: 3,
+                description: '站点信息、业务参数与安全策略配置',
+                actions: ['view', 'update']
+            }
+        ]
+    }
+];
+export const mockRoles = [
+    {
+        id: 'role-admin',
+        name: '超级管理员',
+        description: '系统最高权限，可访问和配置所有功能模块。',
+        status: 'active',
+        data_scope: 'all',
+        default_landing: '/dashboard',
+        menu_ids: mockUserMenus.flatMap(menu => [menu.id, ...(menu.children?.map(child => child.id) || [])]),
+        action_permissions: mockUserMenus.reduce((acc, menu) => {
+            acc[menu.id] = menu.actions || [];
+            menu.children?.forEach(child => {
+                acc[child.id] = child.actions || [];
+            });
+            return acc;
+        }, {}),
+        created_at: new Date('2023-12-01T08:00:00Z').toISOString(),
+        updated_at: new Date('2024-01-15T02:30:00Z').toISOString(),
+        remark: '系统默认内置角色'
+    },
+    {
+        id: 'role-ops',
+        name: '运营经理',
+        description: '负责内容与线索运营，可管理内容中心与线索模块。',
+        status: 'active',
+        data_scope: 'department',
+        default_landing: '/solutions',
+        menu_ids: [
+            'dashboard',
+            'dashboard-analysis',
+            'content-center',
+            'solutions',
+            'products',
+            'banners',
+            'consultations'
+        ],
+        action_permissions: {
+            dashboard: ['view'],
+            'dashboard-analysis': ['view', 'export'],
+            solutions: ['view', 'create', 'update', 'publish'],
+            products: ['view', 'update'],
+            banners: ['view', 'create', 'update'],
+            consultations: ['view', 'assign']
+        },
+        created_at: new Date('2023-12-15T10:12:00Z').toISOString(),
+        updated_at: new Date('2024-01-10T05:00:00Z').toISOString(),
+        remark: '内容与营销负责人'
+    },
+    {
+        id: 'role-analyst',
+        name: '数据分析师',
+        description: '关注运营数据分析，可查看仪表盘及导出报表。',
+        status: 'active',
+        data_scope: 'department',
+        default_landing: '/dashboard',
+        menu_ids: ['dashboard', 'dashboard-realtime', 'dashboard-analysis'],
+        action_permissions: {
+            dashboard: ['view'],
+            'dashboard-realtime': ['view', 'subscribe'],
+            'dashboard-analysis': ['view', 'export']
+        },
+        created_at: new Date('2024-01-05T07:00:00Z').toISOString(),
+        updated_at: new Date('2024-01-20T03:45:00Z').toISOString(),
+        remark: '数据团队专用角色'
+    },
+    {
+        id: 'role-support',
+        name: '客服专员',
+        description: '负责客户咨询跟进与反馈收集，仅访问线索模块。',
+        status: 'active',
+        data_scope: 'self',
+        default_landing: '/consultations',
+        menu_ids: ['content-center', 'consultations'],
+        action_permissions: {
+            consultations: ['view', 'close']
+        },
+        created_at: new Date('2024-01-08T09:30:00Z').toISOString(),
+        updated_at: new Date('2024-01-18T01:10:00Z').toISOString(),
+        remark: '售前客服角色'
+    },
+    {
+        id: 'role-guest',
+        name: '访客',
+        description: '仅用于临时访问，拥有最小化权限。',
+        status: 'inactive',
+        data_scope: 'self',
+        default_landing: '/dashboard',
+        menu_ids: ['dashboard'],
+        action_permissions: {
+            dashboard: ['view']
+        },
+        created_at: new Date('2024-01-12T11:25:00Z').toISOString(),
+        updated_at: new Date('2024-01-12T11:25:00Z').toISOString(),
+        remark: '临时访问控制'
+    }
+];
+export const mockUserAccounts = [
+    {
+        id: 'user-admin',
+        username: 'admin',
+        email: 'admin@company.com',
+        mobile: '13800000001',
+        role_id: 'role-admin',
+        status: 'active',
+        department: '运营中心',
+        position: '平台管理员',
+        login_count: 156,
+        last_login_at: new Date('2024-01-25T02:30:00Z').toISOString(),
+        created_at: new Date('2023-12-01T08:00:00Z').toISOString(),
+        remark: '系统内置超级管理员账号',
+        tags: ['核心账号', '安全']
+    },
+    {
+        id: 'user-ops-01',
+        username: 'operation.lead',
+        email: 'operation.lead@company.com',
+        mobile: '13800000012',
+        role_id: 'role-ops',
+        status: 'active',
+        department: '市场运营部',
+        position: '运营经理',
+        login_count: 98,
+        last_login_at: new Date('2024-01-24T12:15:00Z').toISOString(),
+        created_at: new Date('2023-12-20T03:20:00Z').toISOString(),
+        remark: '负责全站内容排期与投放',
+        tags: ['内容', '增长']
+    },
+    {
+        id: 'user-analyst-01',
+        username: 'data.analyst',
+        email: 'data.analyst@company.com',
+        mobile: '13900000045',
+        role_id: 'role-analyst',
+        status: 'active',
+        department: '数据中心',
+        position: '高级数据分析师',
+        login_count: 123,
+        last_login_at: new Date('2024-01-23T09:40:00Z').toISOString(),
+        created_at: new Date('2024-01-02T05:18:00Z').toISOString(),
+        remark: '负责监控运营指标与产出周报',
+        tags: ['分析', '报表']
+    },
+    {
+        id: 'user-support-01',
+        username: 'support.kelly',
+        email: 'support.kelly@company.com',
+        mobile: '13700000321',
+        role_id: 'role-support',
+        status: 'active',
+        department: '客户成功部',
+        position: '资深客服',
+        login_count: 67,
+        last_login_at: new Date('2024-01-25T04:05:00Z').toISOString(),
+        created_at: new Date('2024-01-08T11:08:00Z').toISOString(),
+        remark: '重点客户跟进负责人',
+        tags: ['客户', '跟进']
+    },
+    {
+        id: 'user-support-02',
+        username: 'support.liang',
+        email: 'support.liang@company.com',
+        mobile: '13700000322',
+        role_id: 'role-support',
+        status: 'inactive',
+        department: '客户成功部',
+        position: '客服专员',
+        login_count: 21,
+        last_login_at: new Date('2024-01-14T01:32:00Z').toISOString(),
+        created_at: new Date('2024-01-10T07:35:00Z').toISOString(),
+        remark: '待重新授权的账号',
+        tags: ['审批中']
+    },
+    {
+        id: 'user-guest-01',
+        username: 'guest.viewer',
+        email: 'guest.viewer@company.com',
+        mobile: '13600000678',
+        role_id: 'role-guest',
+        status: 'inactive',
+        department: '外部合作方',
+        position: '临时访客',
+        login_count: 3,
+        last_login_at: new Date('2024-01-05T06:00:00Z').toISOString(),
+        created_at: new Date('2024-01-05T05:45:00Z').toISOString(),
+        remark: '项目协同短期账号',
+        tags: ['临时']
+    }
+];

@@ -111,21 +111,22 @@ const Settings: React.FC = () => {
 
   const loadUsers = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users`, {
+      const response = await fetch(`${API_BASE_URL}/user-management/users`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
         }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
-        const formattedUsers = data.map((user: any, index: number) => ({
+        const usersData = Array.isArray(data) ? data : data.data
+        const formattedUsers = usersData.map((user: any, index: number) => ({
           key: user.id || index.toString(),
           id: user.id || `U${String(index + 1).padStart(3, '0')}`,
           username: user.username,
           email: user.email,
-          role: user.role,
+          role: user.role || user.role_id || '未分配',
           status: user.status,
           createTime: user.created_at || new Date().toLocaleString(),
           lastLogin: user.last_login || new Date().toLocaleString()

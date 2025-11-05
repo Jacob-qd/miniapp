@@ -8,6 +8,7 @@
     "build": "npm run build:api && tsc -b && vite build",
     "build:api": "tsc --project tsconfig.api.json",
     "lint": "eslint .",
+    "test": "tsx --test \"api/routes/**/*.spec.ts\"",
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "server:dev": "nodemon",
