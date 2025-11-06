@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 
 type Theme = 'light' | 'dark';
 
+/**
+ * @description
+ * @returns {{ theme: Theme, toggleTheme: () => void, isDark: boolean }}
+ */
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
     const savedTheme = localStorage.getItem('theme') as Theme;

@@ -46,6 +46,10 @@ interface Product {
   updateTime: string
 }
 
+/**
+ * @description 产品管理页面组件，用于展示、添加、编辑和删除产品信息。
+ * @returns {React.ReactElement} 产品管理页面。
+ */
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
@@ -92,6 +96,9 @@ const Products: React.FC = () => {
     }
   }, [realtimeProducts])
 
+  /**
+   * @description 从 API 加载产品数据。
+   */
   const loadProducts = async () => {
     setLoading(true)
     try {
@@ -128,6 +135,9 @@ const Products: React.FC = () => {
     setLoading(false)
   }
 
+  /**
+   * @description 加载默认的产品数据，用于 API 请求失败时的后备。
+   */
   const loadDefaultProducts = () => {
     const mockData: Product[] = [
       {
@@ -170,6 +180,11 @@ const Products: React.FC = () => {
     setProducts(mockData)
   }
 
+  /**
+   * @description 根据产品名称生成一个占位图 URL。
+   * @param {string} productName - 产品名称。
+   * @returns {string} 生成的图片 URL。
+   */
   const generateProductImage = (productName: string) => {
     const prompt = encodeURIComponent(`modern business product ${productName}, professional software interface, clean design, technology theme`)
     return `https://trae-api-us.mchost.guru/api/ide/v1/text_to_image?prompt=${prompt}&image_size=square`
@@ -274,18 +289,29 @@ const Products: React.FC = () => {
     },
   ]
 
+  /**
+   * @description 处理新增产品操作。
+   */
   const handleAdd = () => {
     setEditingId(null)
     form.resetFields()
     setModalVisible(true)
   }
 
+  /**
+   * @description 处理编辑产品操作。
+   * @param {Product} record - 要编辑的产品记录。
+   */
   const handleEdit = (record: Product) => {
     setEditingId(record.id)
     form.setFieldsValue(record)
     setModalVisible(true)
   }
 
+  /**
+   * @description 处理删除产品操作。
+   * @param {string} id - 要删除的产品 ID。
+   */
   const handleDelete = async (id: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/products/${id}`, {
@@ -308,6 +334,10 @@ const Products: React.FC = () => {
     }
   }
 
+  /**
+   * @description 处理表单提交，用于创建或更新产品。
+   * @param {any} values - 表单提交的值。
+   */
   const handleSubmit = async (values: any) => {
     try {
       const url = editingId 

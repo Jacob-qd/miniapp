@@ -44,6 +44,10 @@ interface Consultation {
   response?: string
 }
 
+/**
+ * @description 咨询管理页面组件，用于显示和处理客户的咨询信息。
+ * @returns {React.ReactElement} 咨询管理页面。
+ */
 const Consultations: React.FC = () => {
   const [consultations, setConsultations] = useState<Consultation[]>([])
   const [loading, setLoading] = useState(false)
@@ -56,6 +60,9 @@ const Consultations: React.FC = () => {
     loadConsultations()
   }, [])
 
+  /**
+   * @description 加载咨询列表数据。
+   */
   const loadConsultations = async () => {
     setLoading(true)
     // 模拟API调用
@@ -211,11 +218,19 @@ const Consultations: React.FC = () => {
     },
   ]
 
+  /**
+   * @description 处理查看详情操作。
+   * @param {Consultation} record - 要查看的咨询记录。
+   */
   const handleViewDetail = (record: Consultation) => {
     setSelectedRecord(record)
     setDetailVisible(true)
   }
 
+  /**
+   * @description 处理回复操作。
+   * @param {Consultation} record - 要回复的咨询记录。
+   */
   const handleResponse = (record: Consultation) => {
     setSelectedRecord(record)
     form.setFieldsValue({
@@ -226,10 +241,18 @@ const Consultations: React.FC = () => {
     setResponseVisible(true)
   }
 
+  /**
+   * @description 处理拨打电话操作。
+   * @param {string} phone - 要拨打的电话号码。
+   */
   const handleCall = (phone: string) => {
     message.info(`拨打电话：${phone}`)
   }
 
+  /**
+   * @description 处理回复表单提交。
+   * @param {any} values - 表单提交的值。
+   */
   const handleSubmitResponse = async (values: any) => {
     try {
       // 模拟保存API调用

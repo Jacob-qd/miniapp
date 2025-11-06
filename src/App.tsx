@@ -14,16 +14,28 @@ import Settings from './pages/Settings'
 import { RealtimeProvider, RealtimeIndicator } from './contexts/RealtimeContext'
 import './App.css'
 
-// 检查是否已登录
+/**
+ * @description 检查用户是否已登录。
+ * @returns {boolean} 如果用户已登录，则返回 true；否则返回 false。
+ */
 const isAuthenticated = () => {
   return localStorage.getItem('token') !== null
 }
 
-// 受保护的路由组件
+/**
+ * @description 受保护的路由组件，用于验证用户是否登录。
+ * @param {{ children: React.ReactNode }} props - 组件属性。
+ * @param {React.ReactNode} props.children - 要渲染的子组件。
+ * @returns {React.ReactElement} 如果用户已登录，则渲染子组件；否则重定向到登录页面。
+ */
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />
 }
 
+/**
+ * @description 应用程序的主组件，负责设置路由和全局配置。
+ * @returns {React.ReactElement} 应用程序的根组件。
+ */
 function App() {
   return (
     <ConfigProvider locale={zhCN}>

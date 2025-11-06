@@ -36,6 +36,10 @@ interface CompanyInfo {
   certificates: string[]
 }
 
+/**
+ * @description 企业信息管理页面组件，用于编辑和显示企业的基本信息、形象、文化和资质等。
+ * @returns {React.ReactElement} 企业信息管理页面。
+ */
 const Company: React.FC = () => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
@@ -48,6 +52,9 @@ const Company: React.FC = () => {
     loadCompanyInfo()
   }, [])
 
+  /**
+   * @description 加载企业信息。
+   */
   const loadCompanyInfo = async () => {
     setLoading(true)
     // 模拟API调用
@@ -82,6 +89,10 @@ const Company: React.FC = () => {
     setLoading(false)
   }
 
+  /**
+   * @description 处理表单提交，更新企业信息。
+   * @param {any} values - 表单提交的值。
+   */
   const handleSubmit = async (values: any) => {
     try {
       setLoading(true)
@@ -97,14 +108,26 @@ const Company: React.FC = () => {
     }
   }
 
+  /**
+   * @description 处理 Logo 文件上传状态的变化。
+   * @param {any} info - 上传组件返回的信息。
+   */
   const handleLogoChange = (info: any) => {
     setLogoFileList(info.fileList)
   }
 
+  /**
+   * @description 处理横幅文件上传状态的变化。
+   * @param {any} info - 上传组件返回的信息。
+   */
   const handleBannerChange = (info: any) => {
     setBannerFileList(info.fileList)
   }
 
+  /**
+   * @description 处理证书文件上传状态的变化。
+   * @param {any} info - 上传组件返回的信息。
+   */
   const handleCertificateChange = (info: any) => {
     setCertificateFileList(info.fileList)
   }

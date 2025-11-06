@@ -46,6 +46,10 @@ interface Banner {
   updateTime: string
 }
 
+/**
+ * @description 轮播图管理页面组件，用于显示、创建、编辑和删除轮播图。
+ * @returns {React.ReactElement} 轮播图管理页面。
+ */
 const Banners: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>([])
   const [loading, setLoading] = useState(false)
@@ -92,6 +96,9 @@ const Banners: React.FC = () => {
     }
   }, [realtimeBanners])
 
+  /**
+   * @description 从 API 加载轮播图数据。
+   */
   const loadBanners = async () => {
     setLoading(true)
     try {
@@ -128,6 +135,9 @@ const Banners: React.FC = () => {
     setLoading(false)
   }
 
+  /**
+   * @description 加载默认的轮播图数据，用于 API 请求失败时的后备。
+   */
   const loadDefaultBanners = () => {
     const mockData: Banner[] = [
       {
@@ -170,6 +180,11 @@ const Banners: React.FC = () => {
     setBanners(mockData)
   }
 
+  /**
+   * @description 根据标题生成一个占位图 URL。
+   * @param {string} title - 轮播图标题。
+   * @returns {string} 生成的图片 URL。
+   */
   const generateBannerImage = (title: string) => {
     const prompt = encodeURIComponent(`business banner ${title}, professional corporate design, modern technology theme, clean layout`)
     return `https://trae-api-us.mchost.guru/api/ide/v1/text_to_image?prompt=${prompt}&image_size=landscape_16_9`
@@ -260,18 +275,29 @@ const Banners: React.FC = () => {
     },
   ]
 
+  /**
+   * @description 处理新增轮播图操作，打开模态框并重置表单。
+   */
   const handleAdd = () => {
     setEditingId(null)
     form.resetFields()
     setModalVisible(true)
   }
 
+  /**
+   * @description 处理编辑轮播图操作，打开模态框并填充表单。
+   * @param {Banner} record - 要编辑的轮播图记录。
+   */
   const handleEdit = (record: Banner) => {
     setEditingId(record.id)
     form.setFieldsValue(record)
     setModalVisible(true)
   }
 
+  /**
+   * @description 处理删除轮播图操作。
+   * @param {string} id - 要删除的轮播图 ID。
+   */
   const handleDelete = async (id: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/banners/${id}`, {
@@ -294,6 +320,10 @@ const Banners: React.FC = () => {
     }
   }
 
+  /**
+   * @description 处理表单提交操作，用于创建或更新轮播图。
+   * @param {any} values - 表单提交的值。
+   */
   const handleSubmit = async (values: any) => {
     try {
       const url = editingId 

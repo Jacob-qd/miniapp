@@ -27,6 +27,10 @@ import {
 
 const { Header, Sider, Content } = AntLayout
 
+/**
+ * @description 后台管理界面的主布局组件，包含侧边栏、头部和内容区域。
+ * @returns {React.ReactElement} 主布局组件。
+ */
 const Layout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false)
   const navigate = useNavigate()
@@ -35,7 +39,10 @@ const Layout: React.FC = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken()
 
-  // 菜单项配置
+  /**
+   * @description 侧边栏菜单项的配置数组。
+   * @type {Array<Object>}
+   */
   const menuItems = [
     {
       key: '/dashboard',
@@ -74,7 +81,10 @@ const Layout: React.FC = () => {
     },
   ]
 
-  // 面包屑映射
+  /**
+   * @description 面包屑导航的路径与名称映射。
+   * @type {Record<string, string>}
+   */
   const breadcrumbMap: Record<string, string> = {
     '/dashboard': '仪表盘',
     '/solutions': '解决方案管理',
@@ -85,7 +95,10 @@ const Layout: React.FC = () => {
     '/settings': '系统设置',
   }
 
-  // 生成面包屑
+  /**
+   * @description 根据当前路径生成面包屑导航项。
+   * @returns {Array<Object>} 面包屑导航项的数组。
+   */
   const getBreadcrumbItems = () => {
     const pathSnippets = location.pathname.split('/').filter(i => i)
     const breadcrumbItems = [
@@ -111,12 +124,19 @@ const Layout: React.FC = () => {
     return breadcrumbItems
   }
 
-  // 处理菜单点击
+  /**
+   * @description 处理侧边栏菜单的点击事件。
+   * @param {{ key: string }} params - 点击事件的参数。
+   * @param {string} params.key - 被点击菜单项的 key。
+   */
   const handleMenuClick = ({ key }: { key: string }) => {
     navigate(key)
   }
 
-  // 用户下拉菜单
+  /**
+   * @description 用户下拉菜单的配置数组。
+   * @type {Array<Object>}
+   */
   const userMenuItems = [
     {
       key: 'profile',
@@ -139,7 +159,11 @@ const Layout: React.FC = () => {
     },
   ]
 
-  // 处理用户菜单点击
+  /**
+   * @description 处理用户下拉菜单的点击事件。
+   * @param {{ key: string }} params - 点击事件的参数。
+   * @param {string} params.key - 被点击菜单项的 key。
+   */
   const handleUserMenuClick = ({ key }: { key: string }) => {
     if (key === 'logout') {
       localStorage.removeItem('token')

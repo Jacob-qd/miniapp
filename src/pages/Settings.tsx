@@ -56,6 +56,10 @@ interface User {
   lastLogin: string
 }
 
+/**
+ * @description 系统设置页面组件，包括系统配置和用户管理。
+ * @returns {React.ReactElement} 系统设置页面。
+ */
 const Settings: React.FC = () => {
   const [systemForm] = Form.useForm()
   const [userForm] = Form.useForm()
@@ -69,6 +73,9 @@ const Settings: React.FC = () => {
     loadUsers()
   }, [])
 
+  /**
+   * @description 加载系统设置。
+   */
   const loadSystemSettings = async () => {
     setLoading(true)
     try {
@@ -94,6 +101,9 @@ const Settings: React.FC = () => {
     }
   }
 
+  /**
+   * @description 加载默认的系统设置。
+   */
   const loadDefaultSettings = () => {
     const mockSettings: SystemSettings = {
       siteName: '商务管理系统',
@@ -109,6 +119,9 @@ const Settings: React.FC = () => {
     systemForm.setFieldsValue(mockSettings)
   }
 
+  /**
+   * @description 加载用户列表。
+   */
   const loadUsers = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/users`, {
@@ -141,6 +154,9 @@ const Settings: React.FC = () => {
     }
   }
 
+  /**
+   * @description 加载默认的用户数据。
+   */
   const loadDefaultUsers = () => {
     const mockUsers: User[] = [
       {
@@ -177,6 +193,10 @@ const Settings: React.FC = () => {
     setUsers(mockUsers)
   }
 
+  /**
+   * @description 处理系统设置表单提交。
+   * @param {SystemSettings} values - 表单提交的值。
+   */
   const handleSystemSubmit = async (values: SystemSettings) => {
     try {
       setLoading(true)
@@ -277,18 +297,29 @@ const Settings: React.FC = () => {
     },
   ]
 
+  /**
+   * @description 处理新增用户操作。
+   */
   const handleAddUser = () => {
     setEditingUserId(null)
     userForm.resetFields()
     setUserModalVisible(true)
   }
 
+  /**
+   * @description 处理编辑用户操作。
+   * @param {User} record - 要编辑的用户记录。
+   */
   const handleEditUser = (record: User) => {
     setEditingUserId(record.id)
     userForm.setFieldsValue(record)
     setUserModalVisible(true)
   }
 
+  /**
+   * @description 处理删除用户操作。
+   * @param {string} id - 要删除的用户 ID。
+   */
   const handleDeleteUser = async (id: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/${id}`, {
@@ -311,6 +342,11 @@ const Settings: React.FC = () => {
     }
   }
 
+  /**
+   * @description 处理用户状态变更。
+   * @param {boolean} checked - 开关状态。
+   * @param {string} userId - 用户 ID。
+   */
   const handleUserStatusChange = async (checked: boolean, userId: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/${userId}/status`, {
@@ -334,6 +370,10 @@ const Settings: React.FC = () => {
     }
   }
 
+  /**
+   * @description 处理用户表单提交。
+   * @param {any} values - 表单提交的值。
+   */
   const handleUserSubmit = async (values: any) => {
     try {
       const url = editingUserId 

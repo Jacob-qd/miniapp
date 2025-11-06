@@ -42,6 +42,10 @@ interface Solution {
   updateTime: string
 }
 
+/**
+ * @description 解决方案管理页面组件，用于展示、添加、编辑和删除解决方案。
+ * @returns {React.ReactElement} 解决方案管理页面。
+ */
 const Solutions: React.FC = () => {
   const [solutions, setSolutions] = useState<Solution[]>([])
   const [loading, setLoading] = useState(false)
@@ -86,6 +90,9 @@ const Solutions: React.FC = () => {
     }
   }, [realtimeSolutions])
 
+  /**
+   * @description 从 API 加载解决方案数据。
+   */
   const loadSolutions = async () => {
     setLoading(true)
     try {
@@ -120,6 +127,9 @@ const Solutions: React.FC = () => {
     setLoading(false)
   }
 
+  /**
+   * @description 加载默认的解决方案数据，用于 API 请求失败时的后备。
+   */
   const loadDefaultSolutions = () => {
     const mockData: Solution[] = [
       {
@@ -233,18 +243,29 @@ const Solutions: React.FC = () => {
     },
   ]
 
+  /**
+   * @description 处理新增解决方案操作。
+   */
   const handleAdd = () => {
     setEditingId(null)
     form.resetFields()
     setModalVisible(true)
   }
 
+  /**
+   * @description 处理编辑解决方案操作。
+   * @param {Solution} record - 要编辑的解决方案记录。
+   */
   const handleEdit = (record: Solution) => {
     setEditingId(record.id)
     form.setFieldsValue(record)
     setModalVisible(true)
   }
 
+  /**
+   * @description 处理删除解决方案操作。
+   * @param {string} id - 要删除的解决方案 ID。
+   */
   const handleDelete = async (id: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/solutions/${id}`, {
@@ -267,6 +288,10 @@ const Solutions: React.FC = () => {
     }
   }
 
+  /**
+   * @description 处理表单提交，用于创建或更新解决方案。
+   * @param {any} values - 表单提交的值。
+   */
   const handleSubmit = async (values: any) => {
     try {
       const url = editingId 

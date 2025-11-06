@@ -9,6 +9,14 @@ interface UseRealtimeOptions {
   onDelete?: (payload: any) => void
 }
 
+/**
+ * @description
+ * @template T
+ * @param {string} tableName - 要订阅的 Supabase 表名。
+ * @param {T[]} [initialData=[]] - 初始数据状态。
+ * @param {UseRealtimeOptions} [options={}] - 包含 onInsert、onUpdate、onDelete 回调的可选对象。
+ * @returns {{ data: T[], loading: boolean }} - 返回包含实时数据和加载状态的对象。
+ */
 export function useRealtime<T>(tableName: string, initialData: T[] = [], options: UseRealtimeOptions = {}) {
   const [data, setData] = useState<T[]>(initialData)
   const [loading, setLoading] = useState(false)
@@ -65,7 +73,14 @@ export function useRealtime<T>(tableName: string, initialData: T[] = [], options
   return { data, loading }
 }
 
-// 批量数据同步Hook
+/**
+ * @description 用于批量订阅多个 Supabase 表的实时更新。
+ * @returns {{
+ *   isConnected: boolean,
+ *   subscribeToTables: (tableNames: string[], callbacks: Record<string, (payload: any) => void>) => void,
+ *   unsubscribeAll: () => void
+ * }} - 返回包含连接状态、订阅和取消订阅功能的对象。
+ */
 export function useBatchRealtime() {
   const [isConnected, setIsConnected] = useState(false)
   const [channels, setChannels] = useState<RealtimeChannel[]>([])
@@ -123,7 +138,17 @@ export function useBatchRealtime() {
   }
 }
 
-// 数据同步状态Hook
+/**
+ * @description 用于跟踪数据同步的状态，包括最后同步时间、同步次数和错误。
+ * @returns {{
+ *   lastSync: Date | null,
+ *   syncCount: number,
+ *   errors: string[],
+ *   recordSync: () => void,
+ *   recordError: (error: string) => void,
+ *   clearErrors: () => void
+ * }} - 返回包含同步状态和管理功能的对象。
+ */
 export function useSyncStatus() {
   const [lastSync, setLastSync] = useState<Date | null>(null)
   const [syncCount, setSyncCount] = useState(0)

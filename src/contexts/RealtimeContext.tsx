@@ -18,6 +18,12 @@ interface RealtimeProviderProps {
   children: ReactNode
 }
 
+/**
+ * @description 实时数据同步的提供者组件。
+ * @param {RealtimeProviderProps} props - 组件属性。
+ * @param {ReactNode} props.children - 子组件。
+ * @returns {React.ReactElement} 实时数据同步提供者。
+ */
 export function RealtimeProvider({ children }: RealtimeProviderProps) {
   const { isConnected, subscribeToTables, unsubscribeAll } = useBatchRealtime()
   const { lastSync, syncCount, errors, recordSync, recordError, clearErrors } = useSyncStatus()
@@ -137,6 +143,11 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
   )
 }
 
+/**
+ * @description 用于访问实时数据同步上下文的自定义 Hook。
+ * @returns {RealtimeContextType} 实时数据同步上下文。
+ * @throws {Error} 如果在 RealtimeProvider 外部使用，则抛出错误。
+ */
 export function useRealtimeContext() {
   const context = useContext(RealtimeContext)
   if (context === undefined) {
@@ -145,7 +156,10 @@ export function useRealtimeContext() {
   return context
 }
 
-// 实时同步状态指示器组件
+/**
+ * @description 实时同步状态指示器组件。
+ * @returns {React.ReactElement} 实时同步状态指示器。
+ */
 export function RealtimeIndicator() {
   const { isConnected, lastSync, syncCount, errors } = useRealtimeContext()
 

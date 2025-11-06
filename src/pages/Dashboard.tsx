@@ -56,6 +56,10 @@ interface RecentActivity {
   avatar?: string
 }
 
+/**
+ * @description 仪表盘页面组件，用于展示关键业务数据的统计、趋势和最新动态。
+ * @returns {React.ReactElement} 仪表盘页面。
+ */
 const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [consultations, setConsultations] = useState<ConsultationRecord[]>([])
@@ -117,6 +121,9 @@ const Dashboard: React.FC = () => {
     }
   }, [isConnected])
 
+  /**
+   * @description 加载仪表盘数据，包括统计、咨询和活动。
+   */
   const loadDashboardData = async () => {
     setLoading(true)
     
@@ -172,6 +179,9 @@ const Dashboard: React.FC = () => {
     }
   }
   
+  /**
+   * @description 加载默认的仪表盘数据，用于 API 请求失败时的后备。
+   */
   const loadDefaultData = () => {
     // 默认统计数据
     setStatistics({
