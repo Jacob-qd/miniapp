@@ -11,6 +11,7 @@ import Banners from './pages/Banners'
 import Consultations from './pages/Consultations'
 import Company from './pages/Company'
 import Settings from './pages/Settings'
+import UserManagement from './pages/UserManagement'
 import { RealtimeProvider, RealtimeIndicator } from './contexts/RealtimeContext'
 import './App.css'
 
@@ -54,6 +55,7 @@ function App() {
               <Route path="products" element={<Products />} />
               <Route path="banners" element={<Banners />} />
               <Route path="consultations" element={<Consultations />} />
+              <Route path="user-management" element={<UserManagement />} />
               <Route path="company" element={<Company />} />
               <Route path="settings" element={<Settings />} />
             </Route>

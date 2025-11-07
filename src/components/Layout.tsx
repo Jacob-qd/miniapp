@@ -22,7 +22,8 @@ import {
   SettingOutlined,
   UserOutlined,
   LogoutOutlined,
-  HomeOutlined
+  HomeOutlined,
+  SafetyCertificateOutlined
 } from '@ant-design/icons'
 
 const { Header, Sider, Content } = AntLayout
@@ -70,6 +71,11 @@ const Layout: React.FC = () => {
       label: '咨询管理',
     },
     {
+      key: '/user-management',
+      icon: <SafetyCertificateOutlined />,
+      label: '用户与权限',
+    },
+    {
       key: '/company',
       icon: <TeamOutlined />,
       label: '企业信息管理',
@@ -91,6 +97,7 @@ const Layout: React.FC = () => {
     '/products': '产品管理',
     '/banners': '轮播图管理',
     '/consultations': '咨询管理',
+    '/user-management': '用户与权限',
     '/company': '企业信息管理',
     '/settings': '系统设置',
   }
